@@ -12,16 +12,17 @@
 
 	//initial positions player
 	xPos=innerWidth*0.08,
-	yPos=innerHeight-200,
+	yPos=0,
+	xOffset = 0,
 
 	//player controls
 	left = false,
 	right = false,
 
 	//bg
-	x=innerWidth,
-	y=innerHeight-10,
-	x_scroll=0,
+	x = innerWidth,
+	y = innerHeight-10,
+	x_scroll = 0,
 
 	//enemy array
 	enemies = [],
@@ -32,7 +33,7 @@
 
 	//player animation
 	player_animation = [{width:1293, height:1293, frames:18, state:null}],
-	n=0,
+	n = 0,
 	player_speed = 4.6,
 
 	//zomb animation
@@ -50,15 +51,15 @@
 
 bg_game.src = 'layout/assets/img/bg-game.png';
 dog_sp.src = 'character animation/enemies/dog/sprites/spritesheet2.png';
-player_walk.src = 'character animation/knight/sprites/walk_sprite_FULLuwu.png';
-player_idle.src = 'character animation/knight/sprites/idle/idle_sprite.png';
+player_walk.src = 'character animation/knight/sprites/walk_sprite_FULLuwu x982,5.png';
+player_idle.src = 'character animation/knight/sprites/idle/idle_sprite x982,5.png';
 enemy_zombie.src = 'character animation/enemies/zomb_0.png';
 
 //default player anims.
 player_animation.state = player_idle;
 player_animation.frames = 17;
-player_animation.height = 1339;
-player_animation.width = 1293;
+player_animation.height = 334.75;
+player_animation.width = 0;
 
 document.addEventListener('keydown', js_event);
 document.addEventListener('keyup', keyup_event);
@@ -68,9 +69,8 @@ function js_event(event){
 	//literally walk
 if (event.keyCode==65 || event.keyCode==68){
 	player_animation.state = player_walk;
+	player_animation.height = 323.25;
 	player_animation.frames = 24;
-	player_animation.height = 1293;
-	player_animation.width = 1293;
 };
 
 switch (event.keyCode) {
@@ -93,9 +93,8 @@ function keyup_event(event){
 	if (event.keyCode==65 || event.keyCode==68){
 		n=0;
 		player_animation.state = player_idle;
+		player_animation.height = 334.75;
 		player_animation.frames = 17;
-		player_animation.height = 1339;
-		player_animation.width = 1293;
 		scroll = false;
 	};
 
@@ -145,9 +144,20 @@ function timer(){
 
 
 //draw funcs
+//player
 function player(xPos, yPos){
 
-	ctx.drawImage(player_animation.state, 0, player_animation.height*n, player_animation.width, 1293, xPos, yPos, 117+window_size, 117+window_size);
+	if(right==true){
+		player_animation.width=0;
+		xOffset = 0;
+	};
+
+	if(left==true){
+		player_animation.width=491.25;
+		xOffset = 151;
+	};
+
+	ctx.drawImage(player_animation.state, player_animation.width, player_animation.height*n, 491.25, 323, xPos-xOffset, innerHeight-yPos-190, 220+window_size, 130+window_size);
 	if (n>=player_animation.frames) {
 		n=0;
 	}else{
@@ -201,8 +211,8 @@ function spawnEnemies(name, xPos, yPos, height, width, frames, animSpeed, horiz,
 
 function spawnLogic(){
 	//name, xPos, yPos, height, width, frames, animSpeed, horiz, vertical, n, xScale, yScale, speed
-	spawnEnemies(dog_sp, randomInt(0, innerWidth), innerHeight*0.82, 85.25, 125, 7, 1, 0, 1, 0, 100, 80, 12);
-	setTimeout(spawnLogic, randomInt(100, 1000));
+	spawnEnemies(dog_sp, randomInt(0, innerWidth), 120, 85.25, 125, 7, 1, 0, 1, 0, 100, 80, 12);
+	setTimeout(spawnLogic, randomInt(10000, 15000));
 };
 
 //random integer
@@ -214,7 +224,7 @@ function randomInt(min, max){
 
 function main (){
 	//draw
-	ctx.drawImage(bg_game, x_scroll, bg_game.height-y, x, y, 0, 0, x, y);
+	ctx.drawImage(bg_game, x_scroll, bg_game.height-innerHeight-10, innerWidth, innerHeight-10, 0, 0, innerWidth, innerHeight-10);
 	player(xPos, yPos);
 
 	//enemy draw
@@ -223,7 +233,7 @@ function main (){
 
 			ctx.drawImage(enemies[i].name, enemies[i].width*(Math.round(enemies[i].n)*enemies[i].horiz),
 			enemies[i].height*(Math.round(enemies[i].n)*enemies[i].vertical), enemies[i].width, enemies[i].height,
-			enemies[i].xPos, enemies[i].yPos, enemies[i].xScale, enemies[i].yScale);
+			enemies[i].xPos, innerHeight-enemies[i].yPos, enemies[i].xScale, enemies[i].yScale);
 
 			enemies[i].xPos-=enemies[i].speed;
 
@@ -265,7 +275,7 @@ function main (){
 
 	//controls
 	if (left==true){
-		if(xPos>x/2-120+window_size-50 || x_scroll<=0){
+		if(xPos>innerWidth/2-(120+window_size)-50 || x_scroll<=0){
 			xPos-=player_speed;
 			scroll = false;
 		}else{
@@ -275,7 +285,7 @@ function main (){
 	};
 
 	if (right==true){
-		if(xPos<x/2-120+window_size || (x_scroll+x)>=bg_game.width){
+		if(xPos<innerWidth/2-(120+window_size) || (x_scroll+x)>=bg_game.width){
 			xPos+=player_speed;
 			scroll = false;
 		}else{
