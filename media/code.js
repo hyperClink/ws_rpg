@@ -18,6 +18,7 @@
 	//player controls
 	left = false,
 	right = false,
+	attack = false,
 
 	//bg
 	x = innerWidth,
@@ -32,7 +33,9 @@
 
 
 	//player animation
-	player_animation = [{width:1293, height:1293, frames:18, state:null}],
+	player_animation = [{height:0, frames:0, state:null}],
+	player_strg = [{height:0, frames:0, state:null}],
+	player_width = 0,
 	n = 0,
 	player_speed = 4.6,
 
@@ -46,6 +49,7 @@
 	dog_sp = new Image(),
 	player_walk = new Image(),
 	player_idle = new Image(),
+	player_attack = new Image();
 	enemy_zombie = new Image();
 
 
@@ -53,13 +57,13 @@ bg_game.src = 'layout/assets/img/bg-game.png';
 dog_sp.src = 'character animation/enemies/dog/sprites/spritesheet2.png';
 player_walk.src = 'character animation/knight/sprites/walk_sprite_FULLuwu x982,5.png';
 player_idle.src = 'character animation/knight/sprites/idle/idle_sprite x982,5.png';
+player_attack.src = 'character animation/knight/sprites/attack1/attack_full.png'
 enemy_zombie.src = 'character animation/enemies/zomb_0.png';
 
 //default player anims.
-player_animation.state = player_idle;
-player_animation.frames = 17;
 player_animation.height = 334.75;
-player_animation.width = 0;
+player_animation.frames = 17;
+player_animation.state = player_idle;
 
 document.addEventListener('keydown', js_event);
 document.addEventListener('keyup', keyup_event);
@@ -74,15 +78,36 @@ if (event.keyCode==65 || event.keyCode==68){
 };
 
 switch (event.keyCode) {
+
 	case 65:
-		left = true;
+		if (attack==false){
+			left = true;
+		};
 		break;
 
 	case 68:
-		right = true;
+		if (attack==false){
+			right = true;
+		};
+		break;
+
+	case 81:
+
+		if (attack == false){
+
+			//store previous variables
+			player_strg.state = player_animation.state;
+			player_strg.height = player_animation.height;
+			player_strg.frames = player_animation.frames;
+
+			n = 0;
+			attack = true;
+		};
+
 		break;
 
 	default:
+		console.log(event.keyCode);
 		break;
 
 };
@@ -91,11 +116,20 @@ switch (event.keyCode) {
 
 function keyup_event(event){
 	if (event.keyCode==65 || event.keyCode==68){
-		n=0;
+
+		if(attack==false){
+			n=0;
+		};
+
 		player_animation.state = player_idle;
 		player_animation.height = 334.75;
 		player_animation.frames = 17;
 		scroll = false;
+
+		//modify storage during animation
+		player_strg.state = player_animation.state;
+		player_strg.height = player_animation.height;
+		player_strg.frames = player_animation.frames;
 	};
 
 
@@ -148,18 +182,35 @@ function timer(){
 function player(xPos, yPos){
 
 	if(right==true){
-		player_animation.width=0;
+		player_width=0;
 		xOffset = 0;
 	};
 
 	if(left==true){
-		player_animation.width=491.25;
+		player_width=491.25;
 		xOffset = 151;
 	};
 
-	ctx.drawImage(player_animation.state, player_animation.width, player_animation.height*n, 491.25, 323, xPos-xOffset, innerHeight-yPos-190, 220+window_size, 130+window_size);
+	if (attack==true){
+		player_animation.state = player_attack;
+		player_animation.height = 331;
+		player_animation.frames = 20;
+		xOffset=32;
+	};
+
+	ctx.drawImage(player_animation.state, player_width, player_animation.height*n, 491.25, 323, xPos-xOffset, innerHeight-yPos-190, 220+window_size, 130+window_size);
+//reset anim
 	if (n>=player_animation.frames) {
 		n=0;
+
+		if(attack==true){
+			attack=false;
+
+			player_animation.state = player_strg.state;
+			player_animation.height = player_strg.height;
+			player_animation.frames = player_strg.frames;
+		};
+
 	}else{
 		n++;
 	};
@@ -238,6 +289,7 @@ function main (){
 			enemies[i].xPos-=enemies[i].speed;
 
 			if (scroll == true){
+
 				if (right == true){
 					enemies[i].xPos-=player_speed;
 				};
@@ -245,14 +297,17 @@ function main (){
 				if (left == true){
 					enemies[i].xPos+=player_speed;
 				};
+
 			};
 
+//enemy frame advance
 			if (enemies[i].n>=enemies[i].frames) {
 				enemies[i].n=0;
 			}else{
 				enemies[i].n+=enemies[i].animSpeed;
 			};
 
+//despawn enemy
 			if (enemies[i].xPos+enemies[i].name.width<=0){
 				enemies.splice(i--, 1);
 			};
@@ -274,7 +329,7 @@ function main (){
 	ctx.fillText(health, health-4, 34);
 
 	//controls
-	if (left==true){
+	if (left==true && attack==false){
 		if(xPos>innerWidth/2-(120+window_size)-50 || x_scroll<=0){
 			xPos-=player_speed;
 			scroll = false;
@@ -284,7 +339,7 @@ function main (){
 		};
 	};
 
-	if (right==true){
+	if (right==true && attack==false){
 		if(xPos<innerWidth/2-(120+window_size) || (x_scroll+x)>=bg_game.width){
 			xPos+=player_speed;
 			scroll = false;
@@ -301,9 +356,6 @@ function main (){
 	ctx.fillText(`${timeM}:${(getSecondsToday()-time)}`, 60, innerHeight-35);
 
 	ctx.fillText(`Killed: ${killed}`, 10, innerHeight-55);
-
-
-
 
 };
 
